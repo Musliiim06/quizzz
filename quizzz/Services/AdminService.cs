@@ -2,6 +2,7 @@
 using quizzz.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace quizzz.Services
 {
@@ -14,6 +15,36 @@ namespace quizzz.Services
             _context = new AppDbContext();
             // Гарантируем, что база данных создана
             _context.Database.EnsureCreated();
+            // If no users except admin exist, seed some demo users
+            if (!_context.Users.Any(u => u.Role != "Admin"))
+            {
+                var rnd = new System.Random();
+                for (int i = 1; i <= 8; i++)
+                {
+                    var user = new User { Username = $"player{i}", Password = "pass", Role = "Player" };
+                    _context.Users.Add(user);
+                }
+                _context.SaveChanges();
+
+                // Create some demo quiz results for those users
+                var users = _context.Users.Where(u => u.Role != "Admin").ToList();
+                int idCounter = 10;
+                foreach (var u in users)
+                {
+                    int count = rnd.Next(1, 6);
+                    for (int j = 0; j < count; j++)
+                    {
+                        _context.QuizResults.Add(new Models.QuizResult
+                        {
+                            UserId = u.Id,
+                            QuizName = (j % 2 == 0) ? "C# Advanced Concepts" : "Database Design Patterns",
+                            Score = rnd.Next(60, 100),
+                            CompletedAt = System.DateTime.UtcNow.AddHours(-rnd.Next(1, 200))
+                        });
+                    }
+                }
+                _context.SaveChanges();
+            }
         }
 
         // --- ЛОГИКА ПОЛЬЗОВАТЕЛЕЙ ---
@@ -74,6 +105,25 @@ namespace quizzz.Services
         public List<Question> GetAllQuestions()
         {
             return _context.Questions.ToList();
+        }
+
+        // --- ДАННЫЕ ДЛЯ DASHBOARD ---
+
+        public int GetQuizzesCompletedCount(int userId)
+        {
+            return _context.QuizResults.Count(r => r.UserId == userId);
+        }
+
+        public double GetAverageScore(int userId)
+        {
+            var list = _context.QuizResults.Where(r => r.UserId == userId).ToList();
+            if (list.Count == 0) return 0;
+            return list.Average(r => r.Score);
+        }
+
+        public List<Models.QuizResult> GetRecentResults(int userId, int take = 10)
+        {
+            return _context.QuizResults.Where(r => r.UserId == userId).OrderByDescending(r => r.CompletedAt).Take(take).ToList();
         }
     }
 }

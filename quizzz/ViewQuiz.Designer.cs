@@ -1,8 +1,8 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 
 namespace quizzz
 {
-    partial class Form1
+    partial class ViewQuiz
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -19,13 +19,11 @@ namespace quizzz
         {
             this.SuspendLayout();
             // 
-            // Form1
+            // ViewQuiz
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1200, 800);
-            this.Name = "Form1";
-            this.Text = "QuizForge";
+            this.Name = "ViewQuiz";
+            this.Size = new System.Drawing.Size(1200, 800);
             this.ResumeLayout(false);
         }
     }
